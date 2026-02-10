@@ -165,17 +165,25 @@ function LoadingState() {
 
 function TraitCard({ trait, index }) {
   const levelClass =
-    trait.level === "Strong"
+    trait.level === "Extreme"
+      ? "level-extreme"
+      : trait.level === "Intense"
+      ? "level-intense"
+      : trait.level === "Strong"
       ? "level-strong"
       : trait.level === "Present"
       ? "level-present"
       : "level-absent";
 
   const barWidth =
-    trait.level === "Strong"
+    trait.level === "Extreme"
       ? "100%"
+      : trait.level === "Intense"
+      ? "85%"
+      : trait.level === "Strong"
+      ? "70%"
       : trait.level === "Present"
-      ? "50%"
+      ? "40%"
       : "8%";
 
   return (
@@ -338,16 +346,33 @@ function ProfileSection({ profile, label, icon }) {
 
 function ResultsDisplay({ data }) {
   const compatType = data.compatibility.type;
+  console.log("Compat Type: ", compatType);
 
   const badgeClass =
-    compatType === "Harmony"
-      ? "compat-positive"
+    compatType === "Destined"
+      ? "compat-destined"
+      : compatType === "Harmony"
+      ? "compat-harmony"
+      : compatType === "Favourable"
+      ? "compat-favourable"
       : compatType === "Neutral"
       ? "compat-neutral"
-      : "compat-negative";
+      : compatType === "Challenging"
+      ? "compat-challenging"
+      : "compat-clash";
 
   const compatIcon =
-    compatType === "Harmony" ? "💖" : compatType === "Neutral" ? "🤝" : "⚡";
+    compatType === "Destined"
+      ? "🌌"
+      : compatType === "Harmony"
+      ? "💖 "
+      : compatType === "Favorable"
+      ? "💝"
+      : compatType === "Neutral"
+      ? "🤝"
+      : compatType === "Challenging"
+      ? "⚡"
+      : "💔";
 
   return (
     <div style={{ marginTop: 40 }}>
@@ -502,15 +527,17 @@ export default function Home() {
           padding: "48px 20px 80px",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
+        <div
+          className="flex flex-col items-center justify-center"
+          style={{ textAlign: "center", marginBottom: 48 }}
+        >
           <Image
             src="/logo.svg"
             alt="Phool Aur Kaante"
-            width={180}
-            height={180}
+            width={250}
+            height={250}
             priority
             style={{
-              marginBottom: 24,
               filter: "drop-shadow(0 0 20px rgba(236, 72, 153, 0.3))",
             }}
           />
@@ -635,7 +662,7 @@ export default function Home() {
           <p
             style={{
               fontSize: "0.8rem",
-              color: "rgba(190, 24, 93, 0.4)",
+              color: "rgba(190, 24, 93, 0.8)",
               letterSpacing: "0.5px",
             }}
           >

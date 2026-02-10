@@ -292,24 +292,21 @@ body {
 .love-spinner {
   width: 60px;
   height: 60px;
-  animation: spinHeart 1.2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: blinkHeart 1s ease-in-out infinite;
 }
 
-@keyframes spinHeart {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  25% {
-    transform: rotate(90deg) scale(1.1);
+@keyframes blinkHeart {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
   50% {
-    transform: rotate(180deg) scale(1);
-  }
-  75% {
-    transform: rotate(270deg) scale(1.1);
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
+    opacity: 0.3;
+    transform: scale(1.3);
   }
 }
 
@@ -371,12 +368,28 @@ body {
   animation: glowPulse 3s ease-in-out infinite;
 }
 
-.compat-positive {
+.compat-destined {
+  background: rgba(124, 58, 237, 0.1);
+  border: 2.5px solid #7c3aed;
+  color: #5b21b6;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3),
+    inset 0 0 15px rgba(124, 58, 237, 0.1);
+}
+
+.compat-harmony {
   background: rgba(236, 72, 153, 0.1);
   border: 2.5px solid #db2777;
   color: #be185d;
   box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2),
     inset 0 0 15px rgba(236, 72, 153, 0.1);
+}
+
+.compat-favourable {
+  background: rgba(236, 72, 153, 0.1);
+  border: 2.5px solid #ec4899;
+  color: #be185d;
+  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.15),
+    inset 0 0 15px rgba(236, 72, 153, 0.05);
 }
 
 .compat-neutral {
@@ -387,12 +400,20 @@ body {
     inset 0 0 15px rgba(249, 115, 22, 0.05);
 }
 
-.compat-negative {
-  background: rgba(100, 116, 139, 0.08);
-  border: 2.5px solid #64748b;
-  color: #334155;
-  box-shadow: 0 10px 30px rgba(100, 116, 139, 0.15),
-    inset 0 0 15px rgba(100, 116, 139, 0.05);
+.compat-challenging {
+  background: rgba(71, 85, 105, 0.08);
+  border: 2.5px solid #475569;
+  color: #1e293b;
+  box-shadow: 0 10px 30px rgba(71, 85, 105, 0.15),
+    inset 0 0 15px rgba(71, 85, 105, 0.05);
+}
+
+.compat-clash {
+  background: rgba(220, 38, 38, 0.08);
+  border: 2.5px solid #dc2626;
+  color: #991b1b;
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2),
+    inset 0 0 15px rgba(220, 38, 38, 0.05);
 }
 
 .compat-badge::before {
@@ -469,8 +490,31 @@ body {
     rgba(236, 72, 153, 0.25),
     rgba(219, 39, 119, 0.15)
   );
-  color: #f9a8d4;
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  color: #be185d;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.level-intense {
+  background: linear-gradient(
+    135deg,
+    rgba(236, 72, 153, 0.35),
+    rgba(219, 39, 119, 0.25)
+  );
+  color: #be185d;
+  border: 1.5px solid rgba(236, 72, 153, 0.6);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+}
+
+.level-extreme {
+  background: linear-gradient(
+    135deg,
+    rgba(190, 24, 93, 0.4),
+    rgba(157, 23, 77, 0.3)
+  );
+  color: #9d174d;
+  border: 2px solid rgba(190, 24, 93, 0.7);
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+  font-weight: 800;
 }
 
 .level-present {
@@ -479,8 +523,8 @@ body {
     rgba(168, 85, 247, 0.2),
     rgba(139, 92, 246, 0.1)
   );
-  color: #d8b4fe;
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #7c3aed;
+  border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
 .level-absent {
