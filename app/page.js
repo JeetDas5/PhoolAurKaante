@@ -235,28 +235,52 @@ function TraitCard({ trait, index }) {
 }
 
 function ProfileSection({ profile, label, icon }) {
-  const [activeTab, setActiveTab] = useState("strongest");
+  const [activeTab, setActiveTab] = useState("all");
 
-  const tabs = [
-    { key: "strongest", label: "💪 Strongest" },
-    { key: "missing", label: "🔍 Missing" },
-    { key: "all", label: "🌈 All Traits" },
-  ];
+  // Find which levels exist in this person's traits
+  const levelCounts = {};
+  profile.allTraits.forEach((trait) => {
+    levelCounts[trait.level] = (levelCounts[trait.level] || 0) + 1;
+  });
 
-  const strongestTraits = profile.allTraits.filter(
-    (trait) => trait.level === "Strong" || trait.level === "Present"
-  );
-  const missingTraits = profile.allTraits.filter(
-    (trait) => trait.level === "Absent"
-  );
-
-  const traitsMap = {
-    strongest: strongestTraits,
-    missing: missingTraits,
-    all: profile.allTraits,
+  // Define level metadata
+  const levelMeta = {
+    Extreme: { emoji: "🔥", label: "Extreme" },
+    Intense: { emoji: "⚡", label: "Intense" },
+    Strong: { emoji: "💪", label: "Strong" },
+    Present: { emoji: "✨", label: "Present" },
+    Absent: { emoji: "🔍", label: "Absent" },
   };
 
-  const currentTraits = traitsMap[activeTab] || [];
+  // Create dynamic tabs based on existing levels
+  const dynamicTabs = [];
+
+  // Add tabs for each level that exists
+  ["Extreme", "Intense", "Strong", "Present", "Absent"].forEach((level) => {
+    if (levelCounts[level]) {
+      const meta = levelMeta[level];
+      dynamicTabs.push({
+        key: level,
+        label: `${meta.emoji} ${meta.label}`,
+        count: levelCounts[level],
+      });
+    }
+  });
+
+  // Always add "All" tab at the end
+  dynamicTabs.push({
+    key: "all",
+    label: "🌈 All Traits",
+    count: profile.allTraits.length,
+  });
+
+  const tabs = dynamicTabs;
+
+  // Filter traits based on active tab
+  const currentTraits =
+    activeTab === "all"
+      ? profile.allTraits
+      : profile.allTraits.filter((trait) => trait.level === activeTab);
 
   return (
     <div className="profile-section" style={{ paddingTop: 24 }}>
@@ -418,6 +442,7 @@ function ResultsDisplay({ data }) {
           gridTemplateColumns: "1fr 1fr",
           gap: 20,
           marginBottom: 20,
+          alignItems: "start",
         }}
       >
         <div className="glass-card" style={{ padding: "32px 28px" }}>
@@ -441,8 +466,8 @@ function ResultsDisplay({ data }) {
 }
 
 export default function Home() {
-  const [dob1, setDob1] = useState("");
-  const [dob2, setDob2] = useState("");
+  const [dob1, setDob1] = useState("2026-01-01");
+  const [dob2, setDob2] = useState("2026-01-01");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -471,7 +496,10 @@ export default function Home() {
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dob1, dob2 }),
+        body: JSON.stringify({
+          dob1: convertToApiFormat(dob1),
+          dob2: convertToApiFormat(dob2),
+        }),
       });
 
       if (!res.ok) throw new Error("Something went wrong! Try again.");
@@ -516,7 +544,7 @@ export default function Home() {
           position: "relative",
           zIndex: 1,
           width: "100%",
-          maxWidth: "85%",
+          maxWidth: "1200px",
           padding: "48px 20px 80px",
         }}
       >
