@@ -448,26 +448,19 @@ export default function Home() {
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const handleDobChange = useCallback((value, setter) => {
-    let digits = value.replace(/\D/g, "");
-    if (digits.length > 8) digits = digits.slice(0, 8);
-
-    let formatted = "";
-    if (digits.length > 0) formatted = digits.slice(0, 2);
-    if (digits.length > 2) formatted += "-" + digits.slice(2, 4);
-    if (digits.length > 4) formatted += "-" + digits.slice(4, 8);
-
-    setter(formatted);
-  }, []);
-
-  const isValidDate = (dob) => /^\d{2}-\d{2}-\d{4}$/.test(dob);
+  // Convert YYYY-MM-DD to DD-MM-YYYY for API
+  const convertToApiFormat = (dateStr) => {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}-${month}-${year}`;
+  };
 
   const handleSubmit = useCallback(async () => {
     setError("");
     setResult(null);
 
-    if (!isValidDate(dob1) || !isValidDate(dob2)) {
-      setError("Please enter both dates in DD-MM-YYYY format");
+    if (!dob1 || !dob2) {
+      setError("Please select both dates of birth");
       return;
     }
 
@@ -599,11 +592,10 @@ export default function Home() {
               <input
                 id="dob1"
                 className="date-input"
-                type="text"
-                placeholder="DD-MM-YYYY"
+                type="date"
                 value={dob1}
-                onChange={(e) => handleDobChange(e.target.value, setDob1)}
-                maxLength={10}
+                onChange={(e) => setDob1(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
               />
             </div>
 
@@ -614,11 +606,10 @@ export default function Home() {
               <input
                 id="dob2"
                 className="date-input"
-                type="text"
-                placeholder="DD-MM-YYYY"
+                type="date"
                 value={dob2}
-                onChange={(e) => handleDobChange(e.target.value, setDob2)}
-                maxLength={10}
+                onChange={(e) => setDob2(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
               />
             </div>
           </div>
