@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
-/* ──────────────── Floating Hearts Background ──────────────── */
 function FloatingHearts() {
   const [hearts, setHearts] = useState([]);
 
@@ -40,7 +39,6 @@ function FloatingHearts() {
   );
 }
 
-/* ──────────────── Glow Orbs ──────────────── */
 function GlowOrbs() {
   return (
     <>
@@ -82,7 +80,6 @@ function GlowOrbs() {
   );
 }
 
-/* ──────────────── Confetti Burst ──────────────── */
 function ConfettiBurst() {
   const [pieces, setPieces] = useState([]);
 
@@ -129,7 +126,6 @@ function ConfettiBurst() {
   ));
 }
 
-/* ──────────────── Loading State ──────────────── */
 function LoadingState() {
   return (
     <div
@@ -167,7 +163,6 @@ function LoadingState() {
   );
 }
 
-/* ──────────────── Trait Card ──────────────── */
 function TraitCard({ trait, index }) {
   const levelClass =
     trait.level === "Strong"
@@ -231,7 +226,6 @@ function TraitCard({ trait, index }) {
   );
 }
 
-/* ──────────────── Profile Section ──────────────── */
 function ProfileSection({ profile, label, icon }) {
   const [activeTab, setActiveTab] = useState("strongest");
 
@@ -241,7 +235,6 @@ function ProfileSection({ profile, label, icon }) {
     { key: "all", label: "🌈 All Traits" },
   ];
 
-  // Derive strongest and missing traits from allTraits based on level
   const strongestTraits = profile.allTraits.filter(
     (trait) => trait.level === "Strong" || trait.level === "Present"
   );
@@ -296,7 +289,6 @@ function ProfileSection({ profile, label, icon }) {
         </span>
       </div>
 
-      {/* Trait Tabs */}
       <div
         style={{
           display: "flex",
@@ -316,7 +308,6 @@ function ProfileSection({ profile, label, icon }) {
         ))}
       </div>
 
-      {/* Traits Grid */}
       <div
         className="tab-panel-enter"
         key={activeTab}
@@ -345,10 +336,9 @@ function ProfileSection({ profile, label, icon }) {
   );
 }
 
-/* ──────────────── Results Display ──────────────── */
 function ResultsDisplay({ data }) {
   const compatType = data.compatibility.type;
-  
+
   const badgeClass =
     compatType === "Harmony"
       ? "compat-positive"
@@ -357,11 +347,10 @@ function ResultsDisplay({ data }) {
       : "compat-negative";
 
   const compatIcon =
-    compatType === "Positive" ? "💖" : compatType === "Neutral" ? "🌻" : "⚡";
+    compatType === "Harmony" ? "💖" : compatType === "Neutral" ? "🤝" : "⚡";
 
   return (
     <div style={{ marginTop: 40 }}>
-      {/* Compatibility Header */}
       <div
         className="glass-card result-enter stagger-1"
         style={{ padding: "36px 32px", textAlign: "center", marginBottom: 28 }}
@@ -397,7 +386,6 @@ function ResultsDisplay({ data }) {
         </p>
       </div>
 
-      {/* Profiles Side by Side */}
       <div
         className="result-enter stagger-3"
         style={{
@@ -407,7 +395,6 @@ function ResultsDisplay({ data }) {
           marginBottom: 20,
         }}
       >
-        {/* Profile A */}
         <div className="glass-card" style={{ padding: "32px 28px" }}>
           <ProfileSection
             profile={data.profileA}
@@ -428,7 +415,6 @@ function ResultsDisplay({ data }) {
   );
 }
 
-/* ──────────────── MAIN PAGE ──────────────── */
 export default function Home() {
   const [dob1, setDob1] = useState("");
   const [dob2, setDob2] = useState("");
@@ -437,9 +423,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  /* format DD-MM-YYYY automatically */
   const handleDobChange = useCallback((value, setter) => {
-    // strip non-digits
     let digits = value.replace(/\D/g, "");
     if (digits.length > 8) digits = digits.slice(0, 8);
 
@@ -485,7 +469,6 @@ export default function Home() {
     }
   }, [dob1, dob2]);
 
-  /* Handle Enter key press */
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === "Enter" && !loading) {
@@ -510,7 +493,6 @@ export default function Home() {
       <GlowOrbs />
       {showConfetti && <ConfettiBurst />}
 
-      {/* ─── HERO ─── */}
       <main
         style={{
           position: "relative",
@@ -520,9 +502,7 @@ export default function Home() {
           padding: "48px 20px 80px",
         }}
       >
-        {/* Title */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          {/* Logo */}
           <Image
             src="/logo.svg"
             alt="Phool Aur Kaante"
@@ -576,7 +556,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* ─── INPUT CARD ─── */}
         <div className="glass-card" style={{ padding: "40px 32px" }}>
           <div
             className="date-inputs-grid"
@@ -586,7 +565,6 @@ export default function Home() {
               gap: 24,
             }}
           >
-            {/* DOB 1 */}
             <div className="date-input-wrapper">
               <label className="date-label" htmlFor="dob1">
                 🌹 Partner One
@@ -602,7 +580,6 @@ export default function Home() {
               />
             </div>
 
-            {/* DOB 2 */}
             <div className="date-input-wrapper">
               <label className="date-label" htmlFor="dob2">
                 🌷 Partner Two
@@ -619,7 +596,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <p
               style={{
@@ -634,7 +610,6 @@ export default function Home() {
             </p>
           )}
 
-          {/* CTA */}
           <div style={{ textAlign: "center", marginTop: 32 }}>
             <button
               className="cta-button"
@@ -646,13 +621,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ─── LOADING ─── */}
         {loading && <LoadingState />}
 
-        {/* ─── RESULTS ─── */}
         {result && !loading && <ResultsDisplay data={result} />}
 
-        {/* ─── FOOTER ─── */}
         <div
           style={{
             textAlign: "center",
