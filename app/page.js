@@ -2,19 +2,21 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { validateKFID, fetchAndEmailCompatibility } from "./actions";
 
+// ─── Background Effects ────────────────────────────────────────────────────
 function FloatingHearts() {
   const [hearts, setHearts] = useState([]);
 
   useEffect(() => {
     const heartEmojis = ["💖", "💕", "💗", "💘", "💝", "🌸", "✨", "💐", "🩷"];
-    const generated = Array.from({ length: 30 }, (_, i) => ({
+    const generated = Array.from({ length: 25 }, (_, i) => ({
       id: i,
       emoji: heartEmojis[i % heartEmojis.length],
       left: Math.random() * 100,
-      size: 14 + Math.random() * 18,
-      duration: 12 + Math.random() * 18,
-      delay: Math.random() * 15,
+      size: 12 + Math.random() * 16,
+      duration: 14 + Math.random() * 20,
+      delay: Math.random() * 18,
     }));
     setHearts(generated);
   }, []);
@@ -45,35 +47,35 @@ function GlowOrbs() {
       <div
         className="glow-orb"
         style={{
-          width: 500,
-          height: 500,
-          top: "-10%",
+          width: 600,
+          height: 600,
+          top: "-15%",
           left: "-10%",
           background:
-            "radial-gradient(circle, rgba(236, 72, 153, 0.1), transparent)",
+            "radial-gradient(circle, rgba(219, 48, 99, 0.18), transparent)",
         }}
       />
       <div
         className="glow-orb"
         style={{
-          width: 400,
-          height: 400,
+          width: 500,
+          height: 500,
           bottom: "5%",
-          right: "-5%",
+          right: "-8%",
           background:
-            "radial-gradient(circle, rgba(190, 24, 93, 0.08), transparent)",
+            "radial-gradient(circle, rgba(167, 17, 60, 0.14), transparent)",
         }}
       />
       <div
         className="glow-orb"
         style={{
-          width: 300,
-          height: 300,
-          top: "40%",
-          left: "50%",
+          width: 350,
+          height: 350,
+          top: "45%",
+          left: "48%",
           background:
-            "radial-gradient(circle, rgba(217, 70, 239, 0.06), transparent)",
-          opacity: 1,
+            "radial-gradient(circle, rgba(124, 58, 237, 0.08), transparent)",
+          opacity: 0.6,
         }}
       />
     </>
@@ -85,14 +87,14 @@ function ConfettiBurst() {
 
   useEffect(() => {
     const colors = [
-      "#ec4899",
+      "#db3063",
       "#f472b6",
       "#f9a8d4",
       "#fb7185",
-      "#e879f9",
+      "#a7113c",
       "#fda4af",
       "#fecdd3",
-      "#fff",
+      "#ffffff",
     ];
     const generated = Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -104,7 +106,6 @@ function ConfettiBurst() {
       shape: Math.random() > 0.5 ? "50%" : "2px",
     }));
     setPieces(generated);
-
     const timer = setTimeout(() => setPieces([]), 4000);
     return () => clearTimeout(timer);
   }, []);
@@ -126,7 +127,8 @@ function ConfettiBurst() {
   ));
 }
 
-function LoadingState() {
+// ─── Loading State ─────────────────────────────────────────────────────────
+function LoadingState({ message }) {
   return (
     <div
       style={{
@@ -142,390 +144,516 @@ function LoadingState() {
       </div>
       <p
         style={{
-          color: "#be185d",
-          fontSize: "1.1rem",
-          fontWeight: 500,
-          letterSpacing: "0.5px",
+          color: "#fda4af",
+          fontSize: "0.95rem",
+          fontWeight: 600,
+          letterSpacing: "2px",
+          textTransform: "uppercase",
+          textAlign: "center",
         }}
       >
-        Reading the stars for you...
+        {message || "Reading the stars for you..."}
       </p>
       <div
         className="shimmer-loader"
-        style={{
-          width: 200,
-          height: 6,
-          borderRadius: 100,
-          background: "rgba(244, 114, 182, 0.15)",
-        }}
+        style={{ width: 220, height: 4, borderRadius: 100 }}
       />
     </div>
   );
 }
 
-function TraitCard({ trait, index }) {
-  const levelClass =
-    trait.level === "Extreme"
-      ? "level-extreme"
-      : trait.level === "Intense"
-      ? "level-intense"
-      : trait.level === "Strong"
-      ? "level-strong"
-      : trait.level === "Present"
-      ? "level-present"
-      : "level-absent";
-
-  const barWidth =
-    trait.level === "Extreme"
-      ? "100%"
-      : trait.level === "Intense"
-      ? "85%"
-      : trait.level === "Strong"
-      ? "70%"
-      : trait.level === "Present"
-      ? "40%"
-      : "8%";
+// ─── Step Indicator ────────────────────────────────────────────────────────
+function StepIndicator({ currentStep }) {
+  const steps = [
+    { num: 1, label: "Verify" },
+    { num: 2, label: "Dates" },
+    { num: 3, label: "Done" },
+  ];
 
   return (
     <div
-      className="trait-card result-enter"
-      style={{ animationDelay: `${0.1 + index * 0.08}s`, opacity: 0 }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0,
+        marginBottom: 40,
+      }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: 10,
-        }}
-      >
-        <div>
-          <span className="trait-emoji">{trait.emoji}</span>
-          <h4
+      {steps.map((step, idx) => (
+        <div key={step.num} style={{ display: "flex", alignItems: "center" }}>
+          <div
             style={{
-              fontSize: "1rem",
-              fontWeight: 700,
-              color: "#1a0014",
-              marginBottom: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            {trait.name}
-          </h4>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: `2px solid ${
+                  currentStep >= step.num ? "#db3063" : "rgba(219,48,99,0.25)"
+                }`,
+                background:
+                  currentStep >= step.num
+                    ? "linear-gradient(135deg, #db3063, #a7113c)"
+                    : "rgba(219,48,99,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                color:
+                  currentStep >= step.num ? "#fff" : "rgba(219,48,99,0.35)",
+                transition: "all 0.3s ease",
+                boxShadow:
+                  currentStep >= step.num
+                    ? "0 0 16px rgba(219,48,99,0.35)"
+                    : "none",
+              }}
+            >
+              {currentStep > step.num ? "✓" : step.num}
+            </div>
+            <span
+              style={{
+                fontSize: "0.62rem",
+                textTransform: "uppercase",
+                letterSpacing: "1.5px",
+                color:
+                  currentStep >= step.num ? "#db3063" : "rgba(219,48,99,0.3)",
+                fontWeight: 700,
+                transition: "color 0.3s ease",
+              }}
+            >
+              {step.label}
+            </span>
+          </div>
+
+          {idx < steps.length - 1 && (
+            <div
+              style={{
+                width: 60,
+                height: 2,
+                marginBottom: 22,
+                background:
+                  currentStep > step.num
+                    ? "linear-gradient(90deg, #db3063, #a7113c)"
+                    : "rgba(219,48,99,0.15)",
+                transition: "background 0.3s ease",
+              }}
+            />
+          )}
         </div>
-        <span className={`trait-level ${levelClass}`}>{trait.level}</span>
-      </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Step 1: KFID Input ────────────────────────────────────────────────────
+function KFIDStep({ onSuccess }) {
+  const [kfid, setKfid] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleVerify = async () => {
+    setError("");
+    const trimmed = kfid.trim().toUpperCase();
+    if (!trimmed) {
+      setError("Please enter your KFID.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await validateKFID(trimmed);
+      if (result.success) {
+        onSuccess({ name: result.name, email: result.email });
+      } else {
+        setError(result.message || "Verification failed. Please try again.");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !loading) handleVerify();
+  };
+
+  return (
+    <div className="glass-card" style={{ padding: "40px 36px" }}>
+      <p
+        style={{
+          fontSize: "0.72rem",
+          textTransform: "uppercase",
+          letterSpacing: "3px",
+          color: "rgba(219,48,99,0.7)",
+          fontWeight: 700,
+          marginBottom: 28,
+          textAlign: "center",
+        }}
+      >
+        — Enter Your KFID —
+      </p>
 
       <p
         style={{
-          fontSize: "0.82rem",
-          lineHeight: 1.6,
-          color: "rgba(26, 0, 20, 0.7)",
-          marginBottom: 8,
-          whiteSpace: "pre-line",
+          fontSize: "0.9rem",
+          color: "rgba(255,255,255,0.45)",
+          textAlign: "center",
+          marginBottom: 28,
+          lineHeight: 1.65,
         }}
       >
-        {trait.personality}
+        Enter your KIITFest 9.0 Participant ID to verify your registration and
+        unlock your cosmic compatibility result.
       </p>
 
-      <div className="energy-bar-bg">
-        <div className="energy-bar-fill" style={{ width: barWidth }} />
+      <div
+        className="date-input-wrapper"
+        style={{ maxWidth: 400, margin: "0 auto 8px" }}
+      >
+        <label className="date-label" htmlFor="kfid-input">
+          🎟️ Your KFID
+        </label>
+        <input
+          id="kfid-input"
+          className="date-input"
+          type="text"
+          value={kfid}
+          onChange={(e) => setKfid(e.target.value.toUpperCase())}
+          onKeyDown={handleKeyDown}
+          placeholder="e.g. KF123456"
+          style={{ textAlign: "center", letterSpacing: "2px", fontWeight: 700 }}
+          disabled={loading}
+          autoFocus
+        />
+      </div>
+
+      {error && (
+        <p
+          style={{
+            marginTop: 12,
+            color: "#fda4af",
+            fontSize: "0.88rem",
+            textAlign: "center",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+          }}
+        >
+          ⚠ {error}
+        </p>
+      )}
+
+      <div style={{ textAlign: "center", marginTop: 36 }}>
+        <button
+          className="cta-button"
+          onClick={handleVerify}
+          disabled={loading}
+          id="verify-kfid-btn"
+        >
+          {loading ? "✨ Verifying..." : "🎟️ Verify KFID"}
+        </button>
       </div>
     </div>
   );
 }
 
-function ProfileSection({ profile, label, icon }) {
-  const [activeTab, setActiveTab] = useState("all");
+// ─── Step 2: DOB Input ─────────────────────────────────────────────────────
+function DOBStep({ userInfo, onSuccess }) {
+  const [dob1, setDob1] = useState("2000-01-01");
+  const [dob2, setDob2] = useState("2000-01-01");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Find which levels exist in this person's traits
-  const levelCounts = {};
-  profile.allTraits.forEach((trait) => {
-    levelCounts[trait.level] = (levelCounts[trait.level] || 0) + 1;
-  });
+  const handleSubmit = async () => {
+    setError("");
+    if (!dob1 || !dob2) {
+      setError("Please select both dates of birth.");
+      return;
+    }
 
-  // Define level metadata
-  const levelMeta = {
-    Extreme: { emoji: "🔥", label: "Extreme" },
-    Intense: { emoji: "⚡", label: "Intense" },
-    Strong: { emoji: "💪", label: "Strong" },
-    Present: { emoji: "✨", label: "Present" },
-    Absent: { emoji: "🔍", label: "Absent" },
+    setLoading(true);
+    try {
+      const result = await fetchAndEmailCompatibility({
+        name: userInfo.name,
+        email: userInfo.email,
+        dob1,
+        dob2,
+      });
+
+      if (result.success) {
+        onSuccess({ emailSent: result.emailSent, message: result.message });
+      } else {
+        setError(result.message || "Something went wrong. Please try again.");
+      }
+    } catch {
+      setError("Failed to process. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Create dynamic tabs based on existing levels
-  const dynamicTabs = [];
-
-  // Add tabs for each level that exists
-  ["Extreme", "Intense", "Strong", "Present", "Absent"].forEach((level) => {
-    if (levelCounts[level]) {
-      const meta = levelMeta[level];
-      dynamicTabs.push({
-        key: level,
-        label: `${meta.emoji} ${meta.label}`,
-        count: levelCounts[level],
-      });
-    }
-  });
-
-  // Always add "All" tab at the end
-  dynamicTabs.push({
-    key: "all",
-    label: "🌈 All Traits",
-    count: profile.allTraits.length,
-  });
-
-  const tabs = dynamicTabs;
-
-  // Filter traits based on active tab
-  const currentTraits =
-    activeTab === "all"
-      ? profile.allTraits
-      : profile.allTraits.filter((trait) => trait.level === activeTab);
-
   return (
-    <div className="profile-section" style={{ paddingTop: 24 }}>
+    <>
+      {/* Verified user banner */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
-          marginBottom: 16,
-          flexWrap: "wrap",
+          background: "rgba(219,48,99,0.08)",
+          border: "1px solid rgba(219,48,99,0.2)",
+          borderRadius: 12,
+          padding: "14px 20px",
+          marginBottom: 24,
         }}
       >
-        <span style={{ fontSize: "1.8rem" }}>{icon}</span>
+        <span style={{ fontSize: "1.4rem" }}>✅</span>
         <div>
           <p
             style={{
-              fontSize: "0.8rem",
-              color: "rgba(190, 24, 93, 0.7)",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "1px",
+              color: "#db3063",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              margin: 0,
             }}
           >
-            {label}
+            Verified: {userInfo.name}
           </p>
           <p
             style={{
-              fontSize: "0.85rem",
-              color: "rgba(26, 0, 20, 0.5)",
-              marginTop: 2,
+              color: "rgba(255,255,255,0.4)",
+              fontSize: "0.75rem",
+              margin: "2px 0 0",
             }}
           >
-            DOB: {profile.dob}
+            Result will be sent to {userInfo.email}
           </p>
         </div>
-        <span className="archetype-tag" style={{ marginLeft: "auto" }}>
-          {profile.archetype}
-        </span>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          marginBottom: 20,
-          flexWrap: "wrap",
-        }}
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            className={`trait-tab ${activeTab === tab.key ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="glass-card" style={{ padding: "40px 36px" }}>
+        <p
+          style={{
+            fontSize: "0.72rem",
+            textTransform: "uppercase",
+            letterSpacing: "3px",
+            color: "rgba(219,48,99,0.7)",
+            fontWeight: 700,
+            marginBottom: 24,
+            textAlign: "center",
+          }}
+        >
+          — Enter Dates of Birth —
+        </p>
 
-      <div
-        className="tab-panel-enter"
-        key={activeTab}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 14,
-        }}
-      >
-        {currentTraits.map((trait, i) => (
-          <TraitCard key={trait.number} trait={trait} index={i} />
-        ))}
-        {currentTraits.length === 0 && (
+        <div
+          className="date-inputs-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 24,
+          }}
+        >
+          <div className="date-input-wrapper">
+            <label className="date-label" htmlFor="dob1">
+              🌹 Partner One
+            </label>
+            <input
+              id="dob1"
+              className="date-input"
+              type="date"
+              value={dob1}
+              onChange={(e) => setDob1(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="date-input-wrapper">
+            <label className="date-label" htmlFor="dob2">
+              🌷 Partner Two
+            </label>
+            <input
+              id="dob2"
+              className="date-input"
+              type="date"
+              value={dob2}
+              onChange={(e) => setDob2(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {error && (
           <p
             style={{
-              color: "rgba(190, 24, 93, 0.4)",
-              fontStyle: "italic",
-              padding: 24,
+              marginTop: 16,
+              color: "#fda4af",
+              fontSize: "0.88rem",
+              textAlign: "center",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
             }}
           >
-            No traits in this category
+            ⚠ {error}
           </p>
         )}
+
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <button
+            className="cta-button"
+            onClick={handleSubmit}
+            disabled={loading}
+            id="check-compat-btn"
+          >
+            {loading ? "💌 Sending to your email..." : "💘 Send My Result"}
+          </button>
+        </div>
       </div>
-    </div>
+
+      {loading && (
+        <LoadingState message="Computing your stars & sending result..." />
+      )}
+    </>
   );
 }
 
-function ResultsDisplay({ data }) {
-  const compatType = data.compatibility.type;
-  console.log("Compat Type: ", compatType);
+// ─── Step 3: Success Screen ────────────────────────────────────────────────
+function SuccessStep({ userInfo, message, onReset }) {
+  const [showConfetti, setShowConfetti] = useState(true);
 
-  const badgeClass =
-    compatType === "Destined"
-      ? "compat-destined"
-      : compatType === "Harmony"
-      ? "compat-harmony"
-      : compatType === "Favourable"
-      ? "compat-favourable"
-      : compatType === "Neutral"
-      ? "compat-neutral"
-      : compatType === "Challenging"
-      ? "compat-challenging"
-      : "compat-clash";
-
-  const compatIcon =
-    compatType === "Destined"
-      ? "🌌"
-      : compatType === "Harmony"
-      ? "💖 "
-      : compatType === "Favorable"
-      ? "💝"
-      : compatType === "Neutral"
-      ? "🤝"
-      : compatType === "Challenging"
-      ? "⚡"
-      : "💔";
+  useEffect(() => {
+    const t = setTimeout(() => setShowConfetti(false), 4500);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <div style={{ marginTop: 40 }}>
+    <>
+      {showConfetti && <ConfettiBurst />}
       <div
         className="glass-card result-enter stagger-1"
-        style={{ padding: "36px 32px", textAlign: "center", marginBottom: 28 }}
+        style={{
+          padding: "56px 40px",
+          textAlign: "center",
+        }}
       >
+        {/* Big icon */}
+        <div
+          style={{
+            fontSize: "4rem",
+            marginBottom: 24,
+            filter: "drop-shadow(0 0 20px rgba(219,48,99,0.5))",
+            animation: "pulse 1.4s ease-in-out infinite",
+          }}
+        >
+          💌
+        </div>
+
+        <h2
+          className="title-gradient"
+          style={{
+            fontSize: "clamp(1.6rem, 5vw, 2.4rem)",
+            fontWeight: 900,
+            marginBottom: 12,
+          }}
+        >
+          Result Sent!
+        </h2>
+
+        <p
+          style={{
+            fontSize: "1rem",
+            color: "rgba(255,255,255,0.7)",
+            lineHeight: 1.75,
+            maxWidth: 460,
+            marginInline: "auto",
+            marginBottom: 8,
+          }}
+        >
+          {message}
+        </p>
+
+        <p
+          style={{
+            fontSize: "0.85rem",
+            color: "rgba(255,255,255,0.35)",
+            marginBottom: 36,
+          }}
+        >
+          Sent to <strong style={{ color: "#db3063" }}>{userInfo.email}</strong>
+        </p>
+
+        {/* Divider */}
+        <div
+          style={{
+            width: 60,
+            height: 2,
+            background:
+              "linear-gradient(90deg, transparent, #db3063, transparent)",
+            marginInline: "auto",
+            marginBottom: 32,
+          }}
+        />
+
         <p
           style={{
             fontSize: "0.8rem",
-            color: "rgba(190, 24, 93, 0.6)",
-            textTransform: "uppercase",
-            letterSpacing: "2px",
-            fontWeight: 700,
-            marginBottom: 16,
+            color: "rgba(255,255,255,0.25)",
+            letterSpacing: "1px",
+            marginBottom: 28,
           }}
         >
-          Your Compatibility
+          Check your inbox (and spam folder) for the detailed compatibility
+          report 🌹
         </p>
 
-        <span className={`compat-badge ${badgeClass}`}>
-          {compatIcon} {compatType}
-        </span>
-
-        <p
+        <button
+          className="cta-button"
+          id="try-again-btn"
+          onClick={onReset}
           style={{
-            marginTop: 20,
-            fontSize: "1.05rem",
-            lineHeight: 1.7,
-            color: "rgba(26, 0, 20, 0.75)",
-            maxWidth: 600,
-            marginInline: "auto",
+            background: "rgba(219,48,99,0.15)",
+            border: "1px solid rgba(219,48,99,0.4)",
           }}
         >
-          {data.compatibility.message}
-        </p>
+          🔄 Try Another
+        </button>
       </div>
-
-      <div
-        className="result-enter stagger-3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-          marginBottom: 20,
-          alignItems: "start",
-        }}
-      >
-        <div className="glass-card" style={{ padding: "32px 28px" }}>
-          <ProfileSection
-            profile={data.profileA}
-            label="Partner One"
-            icon="👤"
-          />
-        </div>
-
-        <div className="glass-card" style={{ padding: "32px 28px" }}>
-          <ProfileSection
-            profile={data.profileB}
-            label="Partner Two"
-            icon="👤"
-          />
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
+// ─── Main Page ─────────────────────────────────────────────────────────────
 export default function Home() {
-  const [dob1, setDob1] = useState("2026-01-01");
-  const [dob2, setDob2] = useState("2026-01-01");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [showConfetti, setShowConfetti] = useState(false);
+  // step: 1 = KFID input, 2 = DOB input, 3 = success
+  const [step, setStep] = useState(1);
+  const [userInfo, setUserInfo] = useState(null); // { name, email }
+  const [successMsg, setSuccessMsg] = useState("");
 
-  // Convert YYYY-MM-DD to DD-MM-YYYY for API
-  const convertToApiFormat = (dateStr) => {
-    if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    const dayPadded = (day || "").padStart(2, "0");
-    const monthPadded = (month || "").padStart(2, "0");
-    return `${dayPadded}-${monthPadded}-${year}`;
+  const handleKFIDSuccess = ({ name, email }) => {
+    setUserInfo({ name, email });
+    setStep(2);
   };
 
-  const handleSubmit = useCallback(async () => {
-    setError("");
-    setResult(null);
+  const handleDOBSuccess = ({ emailSent, message }) => {
+    setSuccessMsg(message);
+    setStep(3);
+  };
 
-    if (!dob1 || !dob2) {
-      setError("Please select both dates of birth");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_API;
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dob1: convertToApiFormat(dob1),
-          dob2: convertToApiFormat(dob2),
-        }),
-      });
-
-      if (!res.ok) throw new Error("Something went wrong! Try again.");
-
-      const data = await res.json();
-      setResult(data);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
-    } catch (err) {
-      setError(err.message || "Failed to fetch compatibility. Try again!");
-    } finally {
-      setLoading(false);
-    }
-  }, [dob1, dob2]);
-
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === "Enter" && !loading) {
-        handleSubmit();
-      }
-    };
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [handleSubmit, loading]);
+  const handleReset = () => {
+    setStep(1);
+    setUserInfo(null);
+    setSuccessMsg("");
+  };
 
   return (
     <div
@@ -539,51 +667,51 @@ export default function Home() {
     >
       <FloatingHearts />
       <GlowOrbs />
-      {showConfetti && <ConfettiBurst />}
 
       <main
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
-          maxWidth: "1200px",
-          padding: "48px 20px 80px",
+          maxWidth: "860px",
+          padding: "56px 20px 80px",
         }}
       >
-        <div
-          className="flex flex-col items-center justify-center"
-          style={{ textAlign: "center", marginBottom: 48 }}
-        >
+        {/* ── HEADER ── */}
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Image
             src="/logo.svg"
             alt="Phool Aur Kaante"
-            width={250}
-            height={250}
+            width={200}
+            height={200}
             priority
             style={{
-              filter: "drop-shadow(0 0 20px rgba(236, 72, 153, 0.3))",
+              filter:
+                "drop-shadow(0 0 24px rgba(219, 48, 99, 0.45)) drop-shadow(0 0 8px rgba(219, 48, 99, 0.2)) brightness(1.05)",
             }}
           />
 
           <h1
             className="title-gradient"
             style={{
-              fontSize: "clamp(3rem, 7vw, 4rem)",
+              fontSize: "clamp(2.4rem, 6vw, 3.8rem)",
               fontWeight: 900,
-              lineHeight: 1.15,
-              marginBottom: 16,
+              lineHeight: 1.1,
+              marginBottom: 14,
+              marginTop: 8,
             }}
           >
             Phool Aur Kaante
           </h1>
+
           <p
             style={{
-              fontSize: "0.9rem",
+              fontSize: "0.75rem",
               textTransform: "uppercase",
-              letterSpacing: "3px",
-              color: "rgba(249,118,212,0.8)",
-              fontWeight: 600,
-              marginBottom: 12,
+              letterSpacing: "4px",
+              color: "#db3063",
+              fontWeight: 700,
+              marginBottom: 20,
             }}
           >
             Valentine{" "}
@@ -592,99 +720,93 @@ export default function Home() {
             </span>{" "}
             Compatibility
           </p>
-          <p
+
+          {/* KIITFest Badge */}
+          <div
             style={{
-              fontSize: "1.05rem",
-              color: "rgba(26, 0, 20, 0.6)",
-              maxWidth: 500,
-              marginInline: "auto",
-              lineHeight: 1.7,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              background: "rgba(219, 48, 99, 0.08)",
+              border: "1px solid rgba(219, 48, 99, 0.2)",
+              borderRadius: 8,
+              padding: "8px 18px",
+              marginBottom: 20,
             }}
           >
-            Enter your dates of birth and discover how the cosmos connects your
-            souls
+            <span
+              style={{
+                fontSize: "0.65rem",
+                textTransform: "uppercase",
+                letterSpacing: "2px",
+                color: "rgba(255,255,255,0.35)",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Presented at
+            </span>
+            <Image
+              src="/kiitfest-main-logo.avif"
+              alt="KIIT FEST 9.0"
+              width={100}
+              height={32}
+              style={{
+                objectFit: "contain",
+                filter:
+                  "brightness(1.1) drop-shadow(0 0 6px rgba(219,48,99,0.3))",
+              }}
+            />
+          </div>
+
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "rgba(255, 255, 255, 0.5)",
+              maxWidth: 460,
+              marginInline: "auto",
+              lineHeight: 1.75,
+            }}
+          >
+            Verify your KFID, enter your dates of birth, and let the cosmos
+            reveal your compatibility — sent directly to your email 💌
           </p>
         </div>
 
-        <div className="glass-card" style={{ padding: "40px 32px" }}>
-          <div
-            className="date-inputs-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 24,
-            }}
-          >
-            <div className="date-input-wrapper">
-              <label className="date-label" htmlFor="dob1">
-                🌹 Partner One
-              </label>
-              <input
-                id="dob1"
-                className="date-input"
-                type="date"
-                value={dob1}
-                onChange={(e) => setDob1(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </div>
+        {/* ── STEP INDICATOR ── */}
+        <StepIndicator currentStep={step} />
 
-            <div className="date-input-wrapper">
-              <label className="date-label" htmlFor="dob2">
-                🌷 Partner Two
-              </label>
-              <input
-                id="dob2"
-                className="date-input"
-                type="date"
-                value={dob2}
-                onChange={(e) => setDob2(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </div>
-          </div>
+        {/* ── STEP CONTENT ── */}
+        {step === 1 && <KFIDStep onSuccess={handleKFIDSuccess} />}
 
-          {error && (
-            <p
-              style={{
-                marginTop: 16,
-                color: "#fb7185",
-                fontSize: "0.9rem",
-                textAlign: "center",
-                fontWeight: 500,
-              }}
-            >
-              {error}
-            </p>
-          )}
+        {step === 2 && (
+          <DOBStep userInfo={userInfo} onSuccess={handleDOBSuccess} />
+        )}
 
-          <div style={{ textAlign: "center", marginTop: 32 }}>
-            <button
-              className="cta-button"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? "✨ Matching..." : "💘 Check Compatibility"}
-            </button>
-          </div>
-        </div>
+        {step === 3 && (
+          <SuccessStep
+            userInfo={userInfo}
+            message={successMsg}
+            onReset={handleReset}
+          />
+        )}
 
-        {loading && <LoadingState />}
-
-        {result && !loading && <ResultsDisplay data={result} />}
-
+        {/* ── FOOTER ── */}
         <div
           style={{
             textAlign: "center",
-            marginTop: 60,
+            marginTop: 64,
             padding: "24px 0",
+            borderTop: "1px solid rgba(219, 48, 99, 0.12)",
           }}
         >
           <p
             style={{
-              fontSize: "0.8rem",
-              color: "rgba(190, 24, 93, 0.8)",
-              letterSpacing: "0.5px",
+              fontSize: "0.72rem",
+              color: "rgba(219, 48, 99, 0.6)",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              fontWeight: 600,
             }}
           >
             Made with 💖 by Konnexions
