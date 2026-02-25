@@ -477,7 +477,9 @@ export default function Home() {
   const convertToApiFormat = (dateStr) => {
     if (!dateStr) return "";
     const [year, month, day] = dateStr.split("-");
-    return `${day}-${month}-${year}`;
+    const dayPadded = (day || "").padStart(2, "0");
+    const monthPadded = (month || "").padStart(2, "0");
+    return `${dayPadded}-${monthPadded}-${year}`;
   };
 
   const handleSubmit = useCallback(async () => {
