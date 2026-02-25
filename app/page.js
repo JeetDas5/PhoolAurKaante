@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { validateKFID, fetchAndEmailCompatibility } from "./actions";
 
+// ─── Background Effects ────────────────────────────────────────────────────
 function FloatingHearts() {
   const [hearts, setHearts] = useState([]);
 
@@ -104,7 +106,6 @@ function ConfettiBurst() {
       shape: Math.random() > 0.5 ? "50%" : "2px",
     }));
     setPieces(generated);
-
     const timer = setTimeout(() => setPieces([]), 4000);
     return () => clearTimeout(timer);
   }, []);
@@ -126,7 +127,8 @@ function ConfettiBurst() {
   ));
 }
 
-function LoadingState() {
+// ─── Loading State ─────────────────────────────────────────────────────────
+function LoadingState({ message }) {
   return (
     <div
       style={{
@@ -147,385 +149,511 @@ function LoadingState() {
           fontWeight: 600,
           letterSpacing: "2px",
           textTransform: "uppercase",
+          textAlign: "center",
         }}
       >
-        Reading the stars for you...
+        {message || "Reading the stars for you..."}
       </p>
       <div
         className="shimmer-loader"
-        style={{
-          width: 220,
-          height: 4,
-          borderRadius: 100,
-        }}
+        style={{ width: 220, height: 4, borderRadius: 100 }}
       />
     </div>
   );
 }
 
-function TraitCard({ trait, index }) {
-  const levelClass =
-    trait.level === "Extreme"
-      ? "level-extreme"
-      : trait.level === "Intense"
-      ? "level-intense"
-      : trait.level === "Strong"
-      ? "level-strong"
-      : trait.level === "Present"
-      ? "level-present"
-      : "level-absent";
-
-  const barWidth =
-    trait.level === "Extreme"
-      ? "100%"
-      : trait.level === "Intense"
-      ? "85%"
-      : trait.level === "Strong"
-      ? "70%"
-      : trait.level === "Present"
-      ? "40%"
-      : "8%";
+// ─── Step Indicator ────────────────────────────────────────────────────────
+function StepIndicator({ currentStep }) {
+  const steps = [
+    { num: 1, label: "Verify" },
+    { num: 2, label: "Dates" },
+    { num: 3, label: "Done" },
+  ];
 
   return (
     <div
-      className="trait-card result-enter"
-      style={{ animationDelay: `${0.1 + index * 0.08}s`, opacity: 0 }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0,
+        marginBottom: 40,
+      }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: 10,
-        }}
-      >
-        <div>
-          <span className="trait-emoji">{trait.emoji}</span>
-          <h4
+      {steps.map((step, idx) => (
+        <div key={step.num} style={{ display: "flex", alignItems: "center" }}>
+          <div
             style={{
-              fontSize: "0.95rem",
-              fontWeight: 700,
-              color: "#ffffff",
-              marginBottom: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            {trait.name}
-          </h4>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: `2px solid ${
+                  currentStep >= step.num ? "#db3063" : "rgba(219,48,99,0.25)"
+                }`,
+                background:
+                  currentStep >= step.num
+                    ? "linear-gradient(135deg, #db3063, #a7113c)"
+                    : "rgba(219,48,99,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                color:
+                  currentStep >= step.num ? "#fff" : "rgba(219,48,99,0.35)",
+                transition: "all 0.3s ease",
+                boxShadow:
+                  currentStep >= step.num
+                    ? "0 0 16px rgba(219,48,99,0.35)"
+                    : "none",
+              }}
+            >
+              {currentStep > step.num ? "✓" : step.num}
+            </div>
+            <span
+              style={{
+                fontSize: "0.62rem",
+                textTransform: "uppercase",
+                letterSpacing: "1.5px",
+                color:
+                  currentStep >= step.num ? "#db3063" : "rgba(219,48,99,0.3)",
+                fontWeight: 700,
+                transition: "color 0.3s ease",
+              }}
+            >
+              {step.label}
+            </span>
+          </div>
+
+          {idx < steps.length - 1 && (
+            <div
+              style={{
+                width: 60,
+                height: 2,
+                marginBottom: 22,
+                background:
+                  currentStep > step.num
+                    ? "linear-gradient(90deg, #db3063, #a7113c)"
+                    : "rgba(219,48,99,0.15)",
+                transition: "background 0.3s ease",
+              }}
+            />
+          )}
         </div>
-        <span className={`trait-level ${levelClass}`}>{trait.level}</span>
-      </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Step 1: KFID Input ────────────────────────────────────────────────────
+function KFIDStep({ onSuccess }) {
+  const [kfid, setKfid] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleVerify = async () => {
+    setError("");
+    const trimmed = kfid.trim().toUpperCase();
+    if (!trimmed) {
+      setError("Please enter your KFID.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await validateKFID(trimmed);
+      if (result.success) {
+        onSuccess({ name: result.name, email: result.email });
+      } else {
+        setError(result.message || "Verification failed. Please try again.");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !loading) handleVerify();
+  };
+
+  return (
+    <div className="glass-card" style={{ padding: "40px 36px" }}>
+      <p
+        style={{
+          fontSize: "0.72rem",
+          textTransform: "uppercase",
+          letterSpacing: "3px",
+          color: "rgba(219,48,99,0.7)",
+          fontWeight: 700,
+          marginBottom: 28,
+          textAlign: "center",
+        }}
+      >
+        — Enter Your KFID —
+      </p>
 
       <p
         style={{
-          fontSize: "0.82rem",
+          fontSize: "0.9rem",
+          color: "rgba(255,255,255,0.45)",
+          textAlign: "center",
+          marginBottom: 28,
           lineHeight: 1.65,
-          color: "rgba(255, 255, 255, 0.55)",
-          marginBottom: 8,
-          whiteSpace: "pre-line",
         }}
       >
-        {trait.personality}
+        Enter your KIITFest 9.0 Participant ID to verify your registration and
+        unlock your cosmic compatibility result.
       </p>
 
-      <div className="energy-bar-bg">
-        <div className="energy-bar-fill" style={{ width: barWidth }} />
+      <div
+        className="date-input-wrapper"
+        style={{ maxWidth: 400, margin: "0 auto 8px" }}
+      >
+        <label className="date-label" htmlFor="kfid-input">
+          🎟️ Your KFID
+        </label>
+        <input
+          id="kfid-input"
+          className="date-input"
+          type="text"
+          value={kfid}
+          onChange={(e) => setKfid(e.target.value.toUpperCase())}
+          onKeyDown={handleKeyDown}
+          placeholder="e.g. KF123456"
+          style={{ textAlign: "center", letterSpacing: "2px", fontWeight: 700 }}
+          disabled={loading}
+          autoFocus
+        />
+      </div>
+
+      {error && (
+        <p
+          style={{
+            marginTop: 12,
+            color: "#fda4af",
+            fontSize: "0.88rem",
+            textAlign: "center",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+          }}
+        >
+          ⚠ {error}
+        </p>
+      )}
+
+      <div style={{ textAlign: "center", marginTop: 36 }}>
+        <button
+          className="cta-button"
+          onClick={handleVerify}
+          disabled={loading}
+          id="verify-kfid-btn"
+        >
+          {loading ? "✨ Verifying..." : "🎟️ Verify KFID"}
+        </button>
       </div>
     </div>
   );
 }
 
-function ProfileSection({ profile, label, icon }) {
-  const [activeTab, setActiveTab] = useState("all");
+// ─── Step 2: DOB Input ─────────────────────────────────────────────────────
+function DOBStep({ userInfo, onSuccess }) {
+  const [dob1, setDob1] = useState("2000-01-01");
+  const [dob2, setDob2] = useState("2000-01-01");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Find which levels exist in this person's traits
-  const levelCounts = {};
-  profile.allTraits.forEach((trait) => {
-    levelCounts[trait.level] = (levelCounts[trait.level] || 0) + 1;
-  });
+  const handleSubmit = async () => {
+    setError("");
+    if (!dob1 || !dob2) {
+      setError("Please select both dates of birth.");
+      return;
+    }
 
-  // Define level metadata
-  const levelMeta = {
-    Extreme: { emoji: "🔥", label: "Extreme" },
-    Intense: { emoji: "⚡", label: "Intense" },
-    Strong: { emoji: "💪", label: "Strong" },
-    Present: { emoji: "✨", label: "Present" },
-    Absent: { emoji: "🔍", label: "Absent" },
+    setLoading(true);
+    try {
+      const result = await fetchAndEmailCompatibility({
+        name: userInfo.name,
+        email: userInfo.email,
+        dob1,
+        dob2,
+      });
+
+      if (result.success) {
+        onSuccess({ emailSent: result.emailSent, message: result.message });
+      } else {
+        setError(result.message || "Something went wrong. Please try again.");
+      }
+    } catch {
+      setError("Failed to process. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Create dynamic tabs based on existing levels
-  const dynamicTabs = [];
-
-  // Add tabs for each level that exists
-  ["Extreme", "Intense", "Strong", "Present", "Absent"].forEach((level) => {
-    if (levelCounts[level]) {
-      const meta = levelMeta[level];
-      dynamicTabs.push({
-        key: level,
-        label: `${meta.emoji} ${meta.label}`,
-        count: levelCounts[level],
-      });
-    }
-  });
-
-  // Always add "All" tab at the end
-  dynamicTabs.push({
-    key: "all",
-    label: "🌈 All Traits",
-    count: profile.allTraits.length,
-  });
-
-  const tabs = dynamicTabs;
-
-  // Filter traits based on active tab
-  const currentTraits =
-    activeTab === "all"
-      ? profile.allTraits
-      : profile.allTraits.filter((trait) => trait.level === activeTab);
-
   return (
-    <div className="profile-section" style={{ paddingTop: 24 }}>
+    <>
+      {/* Verified user banner */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
-          marginBottom: 16,
-          flexWrap: "wrap",
+          background: "rgba(219,48,99,0.08)",
+          border: "1px solid rgba(219,48,99,0.2)",
+          borderRadius: 12,
+          padding: "14px 20px",
+          marginBottom: 24,
         }}
       >
-        <span style={{ fontSize: "1.8rem" }}>{icon}</span>
+        <span style={{ fontSize: "1.4rem" }}>✅</span>
         <div>
           <p
             style={{
-              fontSize: "0.75rem",
               color: "#db3063",
               fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "2px",
+              fontSize: "0.85rem",
+              margin: 0,
             }}
           >
-            {label}
+            Verified: {userInfo.name}
           </p>
           <p
             style={{
-              fontSize: "0.82rem",
-              color: "rgba(255, 255, 255, 0.38)",
-              marginTop: 2,
+              color: "rgba(255,255,255,0.4)",
+              fontSize: "0.75rem",
+              margin: "2px 0 0",
             }}
           >
-            DOB: {profile.dob}
+            Result will be sent to {userInfo.email}
           </p>
         </div>
-        <span className="archetype-tag" style={{ marginLeft: "auto" }}>
-          {profile.archetype}
-        </span>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          marginBottom: 20,
-          flexWrap: "wrap",
-        }}
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            className={`trait-tab ${activeTab === tab.key ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div
-        className="tab-panel-enter"
-        key={activeTab}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 14,
-        }}
-      >
-        {currentTraits.map((trait, i) => (
-          <TraitCard key={trait.number} trait={trait} index={i} />
-        ))}
-        {currentTraits.length === 0 && (
-          <p
-            style={{
-              color: "rgba(219, 48, 99, 0.35)",
-              fontStyle: "italic",
-              padding: 24,
-            }}
-          >
-            No traits in this category
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ResultsDisplay({ data }) {
-  const compatType = data.compatibility.type;
-  console.log("Compat Type: ", compatType);
-
-  const badgeClass =
-    compatType === "Destined"
-      ? "compat-destined"
-      : compatType === "Harmony"
-      ? "compat-harmony"
-      : compatType === "Favourable"
-      ? "compat-favourable"
-      : compatType === "Neutral"
-      ? "compat-neutral"
-      : compatType === "Challenging"
-      ? "compat-challenging"
-      : "compat-clash";
-
-  const compatIcon =
-    compatType === "Destined"
-      ? "🌌"
-      : compatType === "Harmony"
-      ? "💖 "
-      : compatType === "Favorable"
-      ? "💝"
-      : compatType === "Neutral"
-      ? "🤝"
-      : compatType === "Challenging"
-      ? "⚡"
-      : "💔";
-
-  return (
-    <div style={{ marginTop: 40 }}>
-      <div
-        className="glass-card result-enter stagger-1"
-        style={{ padding: "36px 32px", textAlign: "center", marginBottom: 28 }}
-      >
+      <div className="glass-card" style={{ padding: "40px 36px" }}>
         <p
           style={{
             fontSize: "0.72rem",
-            color: "#db3063",
             textTransform: "uppercase",
             letterSpacing: "3px",
+            color: "rgba(219,48,99,0.7)",
             fontWeight: 700,
-            marginBottom: 20,
+            marginBottom: 24,
+            textAlign: "center",
           }}
         >
-          Your Compatibility
+          — Enter Dates of Birth —
         </p>
 
-        <span className={`compat-badge ${badgeClass}`}>
-          {compatIcon} {compatType}
-        </span>
-
-        <p
+        <div
+          className="date-inputs-grid"
           style={{
-            marginTop: 24,
-            fontSize: "1rem",
-            lineHeight: 1.75,
-            color: "rgba(255, 255, 255, 0.65)",
-            maxWidth: 600,
-            marginInline: "auto",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 24,
           }}
         >
-          {data.compatibility.message}
-        </p>
-      </div>
+          <div className="date-input-wrapper">
+            <label className="date-label" htmlFor="dob1">
+              🌹 Partner One
+            </label>
+            <input
+              id="dob1"
+              className="date-input"
+              type="date"
+              value={dob1}
+              onChange={(e) => setDob1(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              disabled={loading}
+            />
+          </div>
 
-      <div
-        className="result-enter stagger-3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-          marginBottom: 20,
-          alignItems: "start",
-        }}
-      >
-        <div className="glass-card" style={{ padding: "32px 28px" }}>
-          <ProfileSection
-            profile={data.profileA}
-            label="Partner One"
-            icon="👤"
-          />
+          <div className="date-input-wrapper">
+            <label className="date-label" htmlFor="dob2">
+              🌷 Partner Two
+            </label>
+            <input
+              id="dob2"
+              className="date-input"
+              type="date"
+              value={dob2}
+              onChange={(e) => setDob2(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <div className="glass-card" style={{ padding: "32px 28px" }}>
-          <ProfileSection
-            profile={data.profileB}
-            label="Partner Two"
-            icon="👤"
-          />
+        {error && (
+          <p
+            style={{
+              marginTop: 16,
+              color: "#fda4af",
+              fontSize: "0.88rem",
+              textAlign: "center",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+            }}
+          >
+            ⚠ {error}
+          </p>
+        )}
+
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <button
+            className="cta-button"
+            onClick={handleSubmit}
+            disabled={loading}
+            id="check-compat-btn"
+          >
+            {loading ? "💌 Sending to your email..." : "💘 Send My Result"}
+          </button>
         </div>
       </div>
-    </div>
+
+      {loading && (
+        <LoadingState message="Computing your stars & sending result..." />
+      )}
+    </>
   );
 }
 
-export default function Home() {
-  const [dob1, setDob1] = useState("2026-01-01");
-  const [dob2, setDob2] = useState("2026-01-01");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // Convert YYYY-MM-DD to DD-MM-YYYY for API
-  const convertToApiFormat = (dateStr) => {
-    if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    const dayPadded = (day || "").padStart(2, "0");
-    const monthPadded = (month || "").padStart(2, "0");
-    return `${dayPadded}-${monthPadded}-${year}`;
-  };
-
-  const handleSubmit = useCallback(async () => {
-    setError("");
-    setResult(null);
-
-    if (!dob1 || !dob2) {
-      setError("Please select both dates of birth");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_API;
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dob1: convertToApiFormat(dob1),
-          dob2: convertToApiFormat(dob2),
-        }),
-      });
-
-      if (!res.ok) throw new Error("Something went wrong! Try again.");
-
-      const data = await res.json();
-      setResult(data);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
-    } catch (err) {
-      setError(err.message || "Failed to fetch compatibility. Try again!");
-    } finally {
-      setLoading(false);
-    }
-  }, [dob1, dob2]);
+// ─── Step 3: Success Screen ────────────────────────────────────────────────
+function SuccessStep({ userInfo, message, onReset }) {
+  const [showConfetti, setShowConfetti] = useState(true);
 
   useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === "Enter" && !loading) {
-        handleSubmit();
-      }
-    };
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [handleSubmit, loading]);
+    const t = setTimeout(() => setShowConfetti(false), 4500);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <>
+      {showConfetti && <ConfettiBurst />}
+      <div
+        className="glass-card result-enter stagger-1"
+        style={{
+          padding: "56px 40px",
+          textAlign: "center",
+        }}
+      >
+        {/* Big icon */}
+        <div
+          style={{
+            fontSize: "4rem",
+            marginBottom: 24,
+            filter: "drop-shadow(0 0 20px rgba(219,48,99,0.5))",
+            animation: "pulse 1.4s ease-in-out infinite",
+          }}
+        >
+          💌
+        </div>
+
+        <h2
+          className="title-gradient"
+          style={{
+            fontSize: "clamp(1.6rem, 5vw, 2.4rem)",
+            fontWeight: 900,
+            marginBottom: 12,
+          }}
+        >
+          Result Sent!
+        </h2>
+
+        <p
+          style={{
+            fontSize: "1rem",
+            color: "rgba(255,255,255,0.7)",
+            lineHeight: 1.75,
+            maxWidth: 460,
+            marginInline: "auto",
+            marginBottom: 8,
+          }}
+        >
+          {message}
+        </p>
+
+        <p
+          style={{
+            fontSize: "0.85rem",
+            color: "rgba(255,255,255,0.35)",
+            marginBottom: 36,
+          }}
+        >
+          Sent to <strong style={{ color: "#db3063" }}>{userInfo.email}</strong>
+        </p>
+
+        {/* Divider */}
+        <div
+          style={{
+            width: 60,
+            height: 2,
+            background:
+              "linear-gradient(90deg, transparent, #db3063, transparent)",
+            marginInline: "auto",
+            marginBottom: 32,
+          }}
+        />
+
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "rgba(255,255,255,0.25)",
+            letterSpacing: "1px",
+            marginBottom: 28,
+          }}
+        >
+          Check your inbox (and spam folder) for the detailed compatibility
+          report 🌹
+        </p>
+
+        <button
+          className="cta-button"
+          id="try-again-btn"
+          onClick={onReset}
+          style={{
+            background: "rgba(219,48,99,0.15)",
+            border: "1px solid rgba(219,48,99,0.4)",
+          }}
+        >
+          🔄 Try Another
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────
+export default function Home() {
+  // step: 1 = KFID input, 2 = DOB input, 3 = success
+  const [step, setStep] = useState(1);
+  const [userInfo, setUserInfo] = useState(null); // { name, email }
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const handleKFIDSuccess = ({ name, email }) => {
+    setUserInfo({ name, email });
+    setStep(2);
+  };
+
+  const handleDOBSuccess = ({ emailSent, message }) => {
+    setSuccessMsg(message);
+    setStep(3);
+  };
+
+  const handleReset = () => {
+    setStep(1);
+    setUserInfo(null);
+    setSuccessMsg("");
+  };
 
   return (
     <div
@@ -539,24 +667,23 @@ export default function Home() {
     >
       <FloatingHearts />
       <GlowOrbs />
-      {showConfetti && <ConfettiBurst />}
 
       <main
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
-          maxWidth: "1200px",
+          maxWidth: "860px",
           padding: "56px 20px 80px",
         }}
       >
         {/* ── HEADER ── */}
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Image
             src="/logo.svg"
             alt="Phool Aur Kaante"
-            width={220}
-            height={220}
+            width={200}
+            height={200}
             priority
             style={{
               filter:
@@ -567,7 +694,7 @@ export default function Home() {
           <h1
             className="title-gradient"
             style={{
-              fontSize: "clamp(2.8rem, 7vw, 4.5rem)",
+              fontSize: "clamp(2.4rem, 6vw, 3.8rem)",
               fontWeight: 900,
               lineHeight: 1.1,
               marginBottom: 14,
@@ -634,101 +761,35 @@ export default function Home() {
 
           <p
             style={{
-              fontSize: "1rem",
+              fontSize: "0.95rem",
               color: "rgba(255, 255, 255, 0.5)",
-              maxWidth: 480,
+              maxWidth: 460,
               marginInline: "auto",
               lineHeight: 1.75,
             }}
           >
-            Enter your dates of birth and discover how the cosmos connects your
-            souls
+            Verify your KFID, enter your dates of birth, and let the cosmos
+            reveal your compatibility — sent directly to your email 💌
           </p>
         </div>
 
-        {/* ── INPUT CARD ── */}
-        <div className="glass-card" style={{ padding: "40px 36px" }}>
-          {/* subtle section label */}
-          <p
-            style={{
-              fontSize: "0.72rem",
-              textTransform: "uppercase",
-              letterSpacing: "3px",
-              color: "rgba(219,48,99,0.7)",
-              fontWeight: 700,
-              marginBottom: 24,
-              textAlign: "center",
-            }}
-          >
-            — Enter Dates of Birth —
-          </p>
+        {/* ── STEP INDICATOR ── */}
+        <StepIndicator currentStep={step} />
 
-          <div
-            className="date-inputs-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 24,
-            }}
-          >
-            <div className="date-input-wrapper">
-              <label className="date-label" htmlFor="dob1">
-                🌹 Partner One
-              </label>
-              <input
-                id="dob1"
-                className="date-input"
-                type="date"
-                value={dob1}
-                onChange={(e) => setDob1(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </div>
+        {/* ── STEP CONTENT ── */}
+        {step === 1 && <KFIDStep onSuccess={handleKFIDSuccess} />}
 
-            <div className="date-input-wrapper">
-              <label className="date-label" htmlFor="dob2">
-                🌷 Partner Two
-              </label>
-              <input
-                id="dob2"
-                className="date-input"
-                type="date"
-                value={dob2}
-                onChange={(e) => setDob2(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </div>
-          </div>
+        {step === 2 && (
+          <DOBStep userInfo={userInfo} onSuccess={handleDOBSuccess} />
+        )}
 
-          {error && (
-            <p
-              style={{
-                marginTop: 16,
-                color: "#fda4af",
-                fontSize: "0.88rem",
-                textAlign: "center",
-                fontWeight: 600,
-                letterSpacing: "0.5px",
-              }}
-            >
-              ⚠ {error}
-            </p>
-          )}
-
-          <div style={{ textAlign: "center", marginTop: 36 }}>
-            <button
-              className="cta-button"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? "✨ Matching..." : "💘 Check Compatibility"}
-            </button>
-          </div>
-        </div>
-
-        {loading && <LoadingState />}
-
-        {result && !loading && <ResultsDisplay data={result} />}
+        {step === 3 && (
+          <SuccessStep
+            userInfo={userInfo}
+            message={successMsg}
+            onReset={handleReset}
+          />
+        )}
 
         {/* ── FOOTER ── */}
         <div
