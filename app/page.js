@@ -8,13 +8,13 @@ function FloatingHearts() {
 
   useEffect(() => {
     const heartEmojis = ["💖", "💕", "💗", "💘", "💝", "🌸", "✨", "💐", "🩷"];
-    const generated = Array.from({ length: 30 }, (_, i) => ({
+    const generated = Array.from({ length: 25 }, (_, i) => ({
       id: i,
       emoji: heartEmojis[i % heartEmojis.length],
       left: Math.random() * 100,
-      size: 14 + Math.random() * 18,
-      duration: 12 + Math.random() * 18,
-      delay: Math.random() * 15,
+      size: 12 + Math.random() * 16,
+      duration: 14 + Math.random() * 20,
+      delay: Math.random() * 18,
     }));
     setHearts(generated);
   }, []);
@@ -45,35 +45,35 @@ function GlowOrbs() {
       <div
         className="glow-orb"
         style={{
-          width: 500,
-          height: 500,
-          top: "-10%",
+          width: 600,
+          height: 600,
+          top: "-15%",
           left: "-10%",
           background:
-            "radial-gradient(circle, rgba(236, 72, 153, 0.1), transparent)",
+            "radial-gradient(circle, rgba(219, 48, 99, 0.18), transparent)",
         }}
       />
       <div
         className="glow-orb"
         style={{
-          width: 400,
-          height: 400,
+          width: 500,
+          height: 500,
           bottom: "5%",
-          right: "-5%",
+          right: "-8%",
           background:
-            "radial-gradient(circle, rgba(190, 24, 93, 0.08), transparent)",
+            "radial-gradient(circle, rgba(167, 17, 60, 0.14), transparent)",
         }}
       />
       <div
         className="glow-orb"
         style={{
-          width: 300,
-          height: 300,
-          top: "40%",
-          left: "50%",
+          width: 350,
+          height: 350,
+          top: "45%",
+          left: "48%",
           background:
-            "radial-gradient(circle, rgba(217, 70, 239, 0.06), transparent)",
-          opacity: 1,
+            "radial-gradient(circle, rgba(124, 58, 237, 0.08), transparent)",
+          opacity: 0.6,
         }}
       />
     </>
@@ -85,14 +85,14 @@ function ConfettiBurst() {
 
   useEffect(() => {
     const colors = [
-      "#ec4899",
+      "#db3063",
       "#f472b6",
       "#f9a8d4",
       "#fb7185",
-      "#e879f9",
+      "#a7113c",
       "#fda4af",
       "#fecdd3",
-      "#fff",
+      "#ffffff",
     ];
     const generated = Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -142,10 +142,11 @@ function LoadingState() {
       </div>
       <p
         style={{
-          color: "#be185d",
-          fontSize: "1.1rem",
-          fontWeight: 500,
-          letterSpacing: "0.5px",
+          color: "#fda4af",
+          fontSize: "0.95rem",
+          fontWeight: 600,
+          letterSpacing: "2px",
+          textTransform: "uppercase",
         }}
       >
         Reading the stars for you...
@@ -153,10 +154,9 @@ function LoadingState() {
       <div
         className="shimmer-loader"
         style={{
-          width: 200,
-          height: 6,
+          width: 220,
+          height: 4,
           borderRadius: 100,
-          background: "rgba(244, 114, 182, 0.15)",
         }}
       />
     </div>
@@ -203,9 +203,9 @@ function TraitCard({ trait, index }) {
           <span className="trait-emoji">{trait.emoji}</span>
           <h4
             style={{
-              fontSize: "1rem",
+              fontSize: "0.95rem",
               fontWeight: 700,
-              color: "#1a0014",
+              color: "#ffffff",
               marginBottom: 4,
             }}
           >
@@ -218,8 +218,8 @@ function TraitCard({ trait, index }) {
       <p
         style={{
           fontSize: "0.82rem",
-          lineHeight: 1.6,
-          color: "rgba(26, 0, 20, 0.7)",
+          lineHeight: 1.65,
+          color: "rgba(255, 255, 255, 0.55)",
           marginBottom: 8,
           whiteSpace: "pre-line",
         }}
@@ -297,19 +297,19 @@ function ProfileSection({ profile, label, icon }) {
         <div>
           <p
             style={{
-              fontSize: "0.8rem",
-              color: "rgba(190, 24, 93, 0.7)",
-              fontWeight: 600,
+              fontSize: "0.75rem",
+              color: "#db3063",
+              fontWeight: 700,
               textTransform: "uppercase",
-              letterSpacing: "1px",
+              letterSpacing: "2px",
             }}
           >
             {label}
           </p>
           <p
             style={{
-              fontSize: "0.85rem",
-              color: "rgba(26, 0, 20, 0.5)",
+              fontSize: "0.82rem",
+              color: "rgba(255, 255, 255, 0.38)",
               marginTop: 2,
             }}
           >
@@ -355,7 +355,7 @@ function ProfileSection({ profile, label, icon }) {
         {currentTraits.length === 0 && (
           <p
             style={{
-              color: "rgba(190, 24, 93, 0.4)",
+              color: "rgba(219, 48, 99, 0.35)",
               fontStyle: "italic",
               padding: 24,
             }}
@@ -406,12 +406,12 @@ function ResultsDisplay({ data }) {
       >
         <p
           style={{
-            fontSize: "0.8rem",
-            color: "rgba(190, 24, 93, 0.6)",
+            fontSize: "0.72rem",
+            color: "#db3063",
             textTransform: "uppercase",
-            letterSpacing: "2px",
+            letterSpacing: "3px",
             fontWeight: 700,
-            marginBottom: 16,
+            marginBottom: 20,
           }}
         >
           Your Compatibility
@@ -423,10 +423,10 @@ function ResultsDisplay({ data }) {
 
         <p
           style={{
-            marginTop: 20,
-            fontSize: "1.05rem",
-            lineHeight: 1.7,
-            color: "rgba(26, 0, 20, 0.75)",
+            marginTop: 24,
+            fontSize: "1rem",
+            lineHeight: 1.75,
+            color: "rgba(255, 255, 255, 0.65)",
             maxWidth: 600,
             marginInline: "auto",
           }}
@@ -547,43 +547,44 @@ export default function Home() {
           zIndex: 1,
           width: "100%",
           maxWidth: "1200px",
-          padding: "48px 20px 80px",
+          padding: "56px 20px 80px",
         }}
       >
-        <div
-          className="flex flex-col items-center justify-center"
-          style={{ textAlign: "center", marginBottom: 48 }}
-        >
+        {/* ── HEADER ── */}
+        <div style={{ textAlign: "center", marginBottom: 52 }}>
           <Image
             src="/logo.svg"
             alt="Phool Aur Kaante"
-            width={250}
-            height={250}
+            width={220}
+            height={220}
             priority
             style={{
-              filter: "drop-shadow(0 0 20px rgba(236, 72, 153, 0.3))",
+              filter:
+                "drop-shadow(0 0 24px rgba(219, 48, 99, 0.45)) drop-shadow(0 0 8px rgba(219, 48, 99, 0.2)) brightness(1.05)",
             }}
           />
 
           <h1
             className="title-gradient"
             style={{
-              fontSize: "clamp(3rem, 7vw, 4rem)",
+              fontSize: "clamp(2.8rem, 7vw, 4.5rem)",
               fontWeight: 900,
-              lineHeight: 1.15,
-              marginBottom: 16,
+              lineHeight: 1.1,
+              marginBottom: 14,
+              marginTop: 8,
             }}
           >
             Phool Aur Kaante
           </h1>
+
           <p
             style={{
-              fontSize: "0.9rem",
+              fontSize: "0.75rem",
               textTransform: "uppercase",
-              letterSpacing: "3px",
-              color: "rgba(249,118,212,0.8)",
-              fontWeight: 600,
-              marginBottom: 12,
+              letterSpacing: "4px",
+              color: "#db3063",
+              fontWeight: 700,
+              marginBottom: 20,
             }}
           >
             Valentine{" "}
@@ -592,13 +593,52 @@ export default function Home() {
             </span>{" "}
             Compatibility
           </p>
+
+          {/* KIITFest Badge */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              background: "rgba(219, 48, 99, 0.08)",
+              border: "1px solid rgba(219, 48, 99, 0.2)",
+              borderRadius: 8,
+              padding: "8px 18px",
+              marginBottom: 20,
+            }}
+          >
+            <span
+              style={{
+                fontSize: "0.65rem",
+                textTransform: "uppercase",
+                letterSpacing: "2px",
+                color: "rgba(255,255,255,0.35)",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Presented at
+            </span>
+            <Image
+              src="/kiitfest-main-logo.avif"
+              alt="KIIT FEST 9.0"
+              width={100}
+              height={32}
+              style={{
+                objectFit: "contain",
+                filter:
+                  "brightness(1.1) drop-shadow(0 0 6px rgba(219,48,99,0.3))",
+              }}
+            />
+          </div>
+
           <p
             style={{
-              fontSize: "1.05rem",
-              color: "rgba(26, 0, 20, 0.6)",
-              maxWidth: 500,
+              fontSize: "1rem",
+              color: "rgba(255, 255, 255, 0.5)",
+              maxWidth: 480,
               marginInline: "auto",
-              lineHeight: 1.7,
+              lineHeight: 1.75,
             }}
           >
             Enter your dates of birth and discover how the cosmos connects your
@@ -606,7 +646,23 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="glass-card" style={{ padding: "40px 32px" }}>
+        {/* ── INPUT CARD ── */}
+        <div className="glass-card" style={{ padding: "40px 36px" }}>
+          {/* subtle section label */}
+          <p
+            style={{
+              fontSize: "0.72rem",
+              textTransform: "uppercase",
+              letterSpacing: "3px",
+              color: "rgba(219,48,99,0.7)",
+              fontWeight: 700,
+              marginBottom: 24,
+              textAlign: "center",
+            }}
+          >
+            — Enter Dates of Birth —
+          </p>
+
           <div
             className="date-inputs-grid"
             style={{
@@ -648,17 +704,18 @@ export default function Home() {
             <p
               style={{
                 marginTop: 16,
-                color: "#fb7185",
-                fontSize: "0.9rem",
+                color: "#fda4af",
+                fontSize: "0.88rem",
                 textAlign: "center",
-                fontWeight: 500,
+                fontWeight: 600,
+                letterSpacing: "0.5px",
               }}
             >
-              {error}
+              ⚠ {error}
             </p>
           )}
 
-          <div style={{ textAlign: "center", marginTop: 32 }}>
+          <div style={{ textAlign: "center", marginTop: 36 }}>
             <button
               className="cta-button"
               onClick={handleSubmit}
@@ -673,18 +730,22 @@ export default function Home() {
 
         {result && !loading && <ResultsDisplay data={result} />}
 
+        {/* ── FOOTER ── */}
         <div
           style={{
             textAlign: "center",
-            marginTop: 60,
+            marginTop: 64,
             padding: "24px 0",
+            borderTop: "1px solid rgba(219, 48, 99, 0.12)",
           }}
         >
           <p
             style={{
-              fontSize: "0.8rem",
-              color: "rgba(190, 24, 93, 0.8)",
-              letterSpacing: "0.5px",
+              fontSize: "0.72rem",
+              color: "rgba(219, 48, 99, 0.6)",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              fontWeight: 600,
             }}
           >
             Made with 💖 by Konnexions
