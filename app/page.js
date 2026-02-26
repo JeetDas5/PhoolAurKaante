@@ -261,7 +261,7 @@ function KFIDStep({ onSuccess }) {
 
   const handleVerify = async () => {
     setError("");
-    const trimmed = kfid.trim().toUpperCase();
+    const trimmed = kfid.trim();
     if (!trimmed) {
       setError("Please enter your KFID.");
       return;
@@ -327,7 +327,7 @@ function KFIDStep({ onSuccess }) {
           className="date-input"
           type="text"
           value={kfid}
-          onChange={(e) => setKfid(e.target.value.toUpperCase())}
+          onChange={(e) => setKfid(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="e.g. KF123456"
           style={{ textAlign: "center", letterSpacing: "2px", fontWeight: 700 }}
