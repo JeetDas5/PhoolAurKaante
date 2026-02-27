@@ -9,9 +9,9 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "Phool Aur Kaante 💕 | Valentine Compatibility",
+  title: "Phool Aur Kaante 💕",
   description:
-    "Discover your Valentine's compatibility based on your date of birth. Find out how the stars align for you and your partner!",
+    "Discover you and your partner's compatibility based on your date of birth. Find out how the stars align!",
 };
 
 export default function RootLayout({ children }) {
