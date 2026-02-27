@@ -672,22 +672,27 @@ export default function Home() {
           position: "relative",
           zIndex: 1,
           width: "100%",
-          maxWidth: "860px",
-          padding: "56px 20px 80px",
+          maxWidth: "1300px",
+          padding: "30px 20px 80px",
         }}
       >
         {/* ── HEADER ── */}
+        <div style={{
+          width: "100%",
+        maxWidth: "1300px",
+        margin: "0 auto",
+        }}>
         <div style={{ marginBottom: 48, position: "relative" }}>
           <a
             href="https://phool-aur-kaante.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ display: "inline-block" }}
+            style={{ display: "flex", alignSelf:"flex-start" }}
           >
             <Image
               src="/logo.svg"
               alt="Phool Aur Kaante"
-              width={200}
+              width={180}
               height={200}
               priority
               style={{
@@ -736,7 +741,7 @@ export default function Home() {
               background: "rgba(219, 48, 99, 0.08)",
               border: "1px solid rgba(219, 48, 99, 0.2)",
               borderRadius: 8,
-              padding: "18px 18px",
+              padding: "8px 18px",
             }}
           >
             <span
@@ -794,7 +799,12 @@ export default function Home() {
             reveal your compatibility — sent directly to your email 💌
           </p>
         </div>
-
+        </div>
+        <div style={{
+          width: "100%",
+        maxWidth: "860px",
+        margin: "0 auto",
+        }}>
         {/* ── STEP INDICATOR ── */}
         <StepIndicator currentStep={step} />
 
@@ -853,6 +863,7 @@ export default function Home() {
               Konnexions
             </a>
           </p>
+        </div>
         </div>
       </main>
     </div>
