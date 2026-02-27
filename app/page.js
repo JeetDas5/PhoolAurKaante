@@ -677,18 +677,20 @@ export default function Home() {
         }}
       >
         {/* ── HEADER ── */}
-        <div style={{
-          width: "100%",
-        maxWidth: "1300px",
-        margin: "0 auto",
-        }}>
-        <div style={{ marginBottom: 48, position: "relative" }}>
-          <a
-            href="https://phool-aur-kaante.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "flex", alignSelf:"flex-start" }}
-          >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "92vw",
+            margin: "0 auto",
+          }}
+        >
+          <div style={{ marginBottom: 48, position: "relative" }}>
+            <a
+              href="https://phool-aur-kaante.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "flex", alignSelf: "flex-start" }}
+            >
             <Image
               src="/logo.svg"
               alt="Phool Aur Kaante"
