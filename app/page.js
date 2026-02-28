@@ -686,7 +686,7 @@ export default function Home() {
         >
           <div style={{ marginBottom: 48, position: "relative" }}>
             <a
-              href="https://phool-aur-kaante.vercel.app/"
+              href="https://phoolaurkaante.jeetdas.tech"
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: "flex", alignSelf: "flex-start" }}
