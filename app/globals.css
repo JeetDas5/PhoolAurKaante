@@ -889,3 +889,63 @@ a {
     letter-spacing: 1.5px;
   }
 }
+
+/* ===== MOBILE NAVBAR STYLES ===== */
+.navbar-logo {
+  transition: all 0.3s ease;
+}
+
+.kiitfest-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(219, 48, 99, 0.08);
+  border: 1px solid rgba(219, 48, 99, 0.2);
+  border-radius: 8px;
+  padding: 8px 18px;
+}
+
+.kiitfest-badge-text {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.kiitfest-main-logo {
+  display: block;
+}
+
+.kiitfest-icon-logo {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .navbar-logo {
+    width: 120px !important;
+    height: auto !important;
+  }
+
+  .kiitfest-badge-container {
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 0;
+  }
+
+  .kiitfest-badge-text {
+    display: none;
+  }
+
+  .kiitfest-main-logo {
+    display: none;
+  }
+
+  .kiitfest-icon-logo {
+    display: block;
+    width: 36px !important;
+    height: 36px !important;
+  }
+}

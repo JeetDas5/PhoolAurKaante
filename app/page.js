@@ -697,6 +697,7 @@ export default function Home() {
               width={180}
               height={200}
               priority
+              className="navbar-logo"
               style={{
                 objectFit: "contain",
                 transition: "all 0.3s ease",
@@ -733,29 +734,14 @@ export default function Home() {
 
           {/* KIITFest Badge */}
           <div
+            className="kiitfest-badge-container"
             style={{
               position: "absolute",
               top: 0,
               right: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              background: "rgba(219, 48, 99, 0.08)",
-              border: "1px solid rgba(219, 48, 99, 0.2)",
-              borderRadius: 8,
-              padding: "8px 18px",
             }}
           >
-            <span
-              style={{
-                fontSize: "0.65rem",
-                textTransform: "uppercase",
-                letterSpacing: "2px",
-                color: "rgba(255,255,255,0.35)",
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-              }}
-            >
+            <span className="kiitfest-badge-text">
               Presented at
             </span>
             <a
@@ -769,6 +755,28 @@ export default function Home() {
                 alt="KIIT FEST 9.0"
                 width={100}
                 height={32}
+                className="kiitfest-main-logo"
+                style={{
+                  objectFit: "contain",
+                  transition: "all 0.3s ease",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter =
+                    "brightness(1.2) drop-shadow(0 0 12px rgba(219,48,99,0.8))";
+                  e.currentTarget.style.transform = "scale(1.08)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = "brightness(1)";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              />
+              <Image
+                src="/kiitfest-icon.avif"
+                alt="KIIT FEST 9.0"
+                width={36}
+                height={36}
+                className="kiitfest-icon-logo"
                 style={{
                   objectFit: "contain",
                   transition: "all 0.3s ease",
